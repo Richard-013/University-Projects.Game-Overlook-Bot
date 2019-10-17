@@ -1,0 +1,4 @@
+# NodeJS related files and directories
+node_modules/
+package-lock.json
+.node-persist/
