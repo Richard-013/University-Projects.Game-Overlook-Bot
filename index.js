@@ -1,6 +1,11 @@
 // Require statements
 const Discord = require('discord.js');
 const fs = require('fs');
+const config = require('./config.json');
+
+// Set up key data from config
+const prefix = config.prefix;
+const owner = config.ownerID;
 
 // Create a new Discord client
 const client = new Discord.Client();
@@ -15,3 +20,13 @@ client.once('ready', () => {
 
 // Use the token to allow the bot to login to Discord
 client.login(botToken);
+
+client.on('message', message => {
+	// If a message is not a command and or it is from a bot, then ignore it
+	if(!message.content.startsWith(prefix) || message.author.bot) return;
+    
+	// Ping Pong
+	if (message.content.startsWith(prefix + 'ping')) {
+		message.channel.send('pong <@' + message.author.id + '>');
+	}
+});
