@@ -6,10 +6,23 @@ const config = require('./config.json');
 // Set up key data from config
 const prefix = config.prefix;
 
-// Create a new Discord client
-const client = new Discord.Client();
 // Get the bot's token from the file it is stored in
 const botToken = fs.readFileSync('DiscordToken.txt', 'utf8');
+
+// Create a new Discord client
+const client = new Discord.Client();
+// Creates a collection of commands
+client.commands = new Discord.Collection();
+// Reads a list of all the command files in the commands directory
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+	const command = require(`./commands/${file}`);
+
+	// Sets a new item in the collection of commands
+	// The command name acts as the key, whilst the exported command itself is the value
+	client.commands.set(command.name, command);
+}
 
 // When the client is ready, run this code
 // This event will only trigger one time after logging in
@@ -30,38 +43,14 @@ client.on('message', message => {
 	const command = args.shift().toLowerCase();
 
 	if (command === 'kick') {
-		// Checks if a user was mentioned before executing the command
-		if(!message.mentions.users.size) {
-			// message.reply() automatically tags the message sender in the response
-			return message.reply('You have to mention someone to ask to kick them');
-		}
-		// Gets the first user tagged in the arguments
-		const taggedUser = message.mentions.users.first();
-		message.channel.send(`You wanted to kick: ${taggedUser.username}`);
+		client.commands.get('kick').execute(message, args);
 	} else if (command === 'ping') {
-		// Responds to ping with pong
-		message.channel.send('pong <@' + message.author.id + '>');
+		client.commands.get('ping').execute(message, args);
 	} else if (command === 'beep') {
-		// Responds to beep with boop
-		message.reply('boop');
-	} else if (command === 'server-info') {
-		// Servers are called guilds in the discord.js API
-		message.channel.send(`This server is called: ${message.guild.name}\nThe number of users in this server is: ${message.guild.memberCount}`);
-	} else if (command === 'user-info') {
-		// Gives the user their information
-		message.channel.send(`Your username: ${message.author.username}\nYour ID: ${message.author.id}`);
+		client.commands.get('beep').execute(message, args);
+	} else if (command === 'server') {
+		client.commands.get('server').execute(message, args);
 	} else if (command === 'avatar') {
-		if(!message.mentions.users.size) {
-			// Gives command sender's avatar url
-			return message.channel.send(`Your avatar: <${message.author.displayAvatarURL}>`);
-		} else {
-			// eslint-disable-next-line no-unused-vars
-			const avatarList = message.mentions.users.map(user => {
-				// Loops through all mentioned users and gives avatar URL
-				return `${user.username}'s avatar: <${user.displayAvatarURL}>`;
-			});
-
-			message.channel.send(avatarList);
-		}
+		client.commands.get('avatar').execute(message, args);
 	}
 });
