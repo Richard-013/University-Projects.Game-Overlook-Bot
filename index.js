@@ -5,7 +5,6 @@ const config = require('./config.json');
 
 // Set up key data from config
 const prefix = config.prefix;
-const owner = config.ownerID;
 
 // Create a new Discord client
 const client = new Discord.Client();
