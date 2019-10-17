@@ -42,15 +42,17 @@ client.on('message', message => {
 	// shift() removes the first element of the array and returns it, here it removes the command name and stores it in the command constant
 	const command = args.shift().toLowerCase();
 
-	if (command === 'kick') {
-		client.commands.get('kick').execute(message, args);
-	} else if (command === 'ping') {
-		client.commands.get('ping').execute(message, args);
-	} else if (command === 'beep') {
-		client.commands.get('beep').execute(message, args);
-	} else if (command === 'server') {
-		client.commands.get('server').execute(message, args);
-	} else if (command === 'avatar') {
-		client.commands.get('avatar').execute(message, args);
+	// Checks if a command exists, if it doesn't then do nothing
+	if (!client.commands.has(command)) {
+		return;
+	} else {
+		// If a command does exist, attempt to run it
+		try {
+			// Use command variable to find and execute command
+			client.commands.get(command).execute(message, args);
+		} catch (err) {
+			console.error(err);
+			message.reply('Yikes, that command encountered an error, try it again later');
+		}
 	}
 });
