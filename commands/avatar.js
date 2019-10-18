@@ -1,6 +1,7 @@
 module.exports = {
 	name: 'avatar',
 	description: 'Get avatar URLs of mentioned users or yourself',
+	aliases: ['icon, pfp'],
 	execute(message, args) {
 		if(!message.mentions.users.size) {
 			// Gives command sender's avatar url
