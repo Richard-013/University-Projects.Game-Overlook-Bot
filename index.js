@@ -40,19 +40,36 @@ client.on('message', message => {
 	// Gets everything after the command prefix and splits it whenever there's whitespace (uses Regex)
 	const args = message.content.slice(prefix.length).split(/ +/);
 	// shift() removes the first element of the array and returns it, here it removes the command name and stores it in the command constant
-	const command = args.shift().toLowerCase();
+	const commandName = args.shift().toLowerCase();
 
-	// Checks if a command exists, if it doesn't then do nothing
-	if (!client.commands.has(command)) {
+	// Checks if a command exists, or if one has an alias to match commandName
+	const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+	// If the command doesn't exist then do nothing
+	if (!command) {
 		return;
-	} else {
-		// If a command does exist, attempt to run it
-		try {
-			// Use command variable to find and execute command
-			client.commands.get(command).execute(message, args);
-		} catch (err) {
-			console.error(err);
-			message.reply('Yikes, that command encountered an error, try it again later');
-		}
+	}
+
+	// Checks if a command is a server-only command and sends a message if it is used in DMs
+	if (command.guildOnly && message.channel.type !== 'text') {
+		return message.reply('I can\'t execute that command inside DMs!');
+	}
+
+	// If a command requires arguments and no arguments are passed, return an message to tell the user this
+	// Also tells the user what the proper usage is i.e. what arguments to provide
+	if (command.args && !args.length) {
+		let reply = `You didn't provide any arguments, ${message.author}!`;
+
+		reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
+
+		return message.channel.send(reply);
+	}
+
+	try {
+		// Use command variable to find and execute command
+		command.execute(message, args);
+	} catch (err) {
+		console.error(err);
+		message.reply('Yikes, that command encountered an error, try it again later');
 	}
 });
